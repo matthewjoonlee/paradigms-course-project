@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.user.username }} | Worndly{% endblock %}
+
+{% block content %}
+<section class="section-header">
+    <div>
+        <p class="eyebrow">Player Profile</p>
+        <h1>{{ profile.user.username }}</h1>
+    </div>
+    <a class="button button-secondary" href="{% url 'worndly:profile_list' %}">Back to profiles</a>
+</section>
+
+<section class="panel">
+    <dl class="detail-grid">
+        <dt>Name</dt>
+        <dd>{{ profile.name|default:"No name provided" }}</dd>
+        <dt>Username</dt>
+        <dd>{{ profile.user.username }}</dd>
+        <dt>Email</dt>
+        <dd>{{ profile.user.email }}</dd>
+        <dt>Created</dt>
+        <dd>{{ profile.created_at|date:"F j, Y" }}</dd>
+    </dl>
+</section>
+{% endblock %}

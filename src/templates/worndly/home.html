@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Worndly | Player Profiles{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Subfeature 1.1</p>
+    <h1>Create your Worndly player profile</h1>
+    <p class="lede">
+        The system allows a user to create a player profile with an optional name
+        plus required username, email, and password fields.
+    </p>
+    <div class="hero-actions">
+        <a class="button" href="{% url 'worndly:profile_create' %}">Create profile</a>
+        <a class="button button-secondary" href="{% url 'worndly:profile_list' %}">Browse profiles</a>
+    </div>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <h2>Implemented today</h2>
+        <p>Phase 1 starter for user profile creation, persistence, and profile listing.</p>
+    </article>
+    <article class="panel">
+        <h2>Profiles created</h2>
+        <p class="metric">{{ profile_count }}</p>
+        <p>This count updates as new players register through the form flow.</p>
+    </article>
+    <article class="panel">
+        <h2>Storage design</h2>
+        <p>Django's built-in user table stores credentials, and a linked profile stores the optional display name.</p>
+    </article>
+</section>
+
+<section class="panel">
+    <h2>Recent profiles</h2>
+    {% if recent_profiles %}
+        <ul class="item-list">
+            {% for profile in recent_profiles %}
+                <li>
+                    <a href="{% url 'worndly:profile_detail' profile.pk %}">{{ profile.user.username }}</a>
+                    <span>{{ profile.name|default:"No name provided" }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No profiles exist yet. Create one to capture your first Phase 1 screenshots.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+Project worndly_phase1 {
+  database_type: "SQLite"
+  Note: "Phase 1 storage design for worNDly subfeature 1.1: Create new User Profile."
+}
+
+Table auth_user {
+  id integer [pk, increment]
+  username varchar(150) [not null, unique]
+  email varchar(254) [not null]
+  password varchar(128) [not null]
+  Note: "Django built-in user table used for authentication and account identity."
+}
+
+Table player_profile {
+  id integer [pk, increment]
+  user_id integer [not null, unique, ref: > auth_user.id]
+  name varchar(120) [note: "Optional display name"]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: "Application-specific profile data for a player."
+}
+

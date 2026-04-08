@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Create Profile | Worndly{% endblock %}
+
+{% block content %}
+<section class="section-header">
+    <div>
+        <p class="eyebrow">Subfeature 1.1</p>
+        <h1>Create a new player profile</h1>
+    </div>
+    <a class="button button-secondary" href="{% url 'worndly:profile_list' %}">View profiles</a>
+</section>
+
+<section class="panel form-panel">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="button" type="submit">Create profile</button>
+    </form>
+    <p class="form-note">
+        Name is optional. Username, email, and password are required by the Phase 1 specification.
+    </p>
+</section>
+{% endblock %}
