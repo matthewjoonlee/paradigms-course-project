@@ -9,6 +9,10 @@ This repository contains the Phase 1 Django starter for Worndly. It includes a w
 - SQLite
 - Server-rendered Django templates
 
+## Features implemented in Phase 1
+- Feature 1.1: create player profile (username, email, password, optional name)
+- Feature 2.1: gameplay (language selection, word guessing, color feedback, daily limit)
+
 ## Setup
 
 1. Create the virtual environment:
@@ -49,6 +53,11 @@ python manage.py runserver
 ```
 
 Open `http://127.0.0.1:8000/` for the app and `http://127.0.0.1:8000/admin/` for Django admin.
+
+## How to play
+1. Create a user profile at `http://127.0.0.1:8000/profiles/new/`
+2. Go to `http://127.0.0.1:8000/game/` to start game
+3. Select language and enter 5-letter words in 6 attempts
 
 ## Current Phase 1 baseline
 
