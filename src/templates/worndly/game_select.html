@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Play worNDly{% endblock %}
+
+{% block content %}
+<div class="game-select-container">
+    <h1 class="game-select-title">worNDly</h1>
+    <p class="game-select-subtitle">Choose a language to get started</p>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="language-form">
+        {% csrf_token %}
+        <div class="language-grid">
+            {% for code, label in languages %}
+            <label class="language-card">
+                <input type="radio" name="language" value="{{ code }}" required>
+                <span class="language-label">{{ label }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Start Game</button>
+    </form>
+</div>
+{% endblock %}

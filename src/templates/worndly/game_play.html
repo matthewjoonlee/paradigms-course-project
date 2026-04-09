@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}worNDly – Game #{{ game.pk }}{% endblock %}
+
+{% block content %}
+<div class="game-container">
+
+    <div class="game-header">
+        <h1 class="game-title">worNDly</h1>
+        <p class="game-meta">
+            Language: <strong>{{ game.get_language_display }}</strong>
+            &nbsp;|&nbsp;
+            Attempts left: <strong id="attempts-left">{{ attempts_left }}</strong>
+        </p>
+    </div>
+
+    <!-- 6x5 game board -->
+    <div class="game-board" id="game-board">
+        <!-- completed guess rows -->
+        {% for guess_row in guesses %}
+        <div class="tile-row">
+            {% for cell in guess_row %}
+            <div class="tile tile-{{ cell.result }}">{{ cell.letter }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        {% if not game_over %}
+        <!-- active input row -->
+        <div class="tile-row" id="active-row">
+            <div class="tile tile-empty" id="tile-0"></div>
+            <div class="tile tile-empty" id="tile-1"></div>
+            <div class="tile tile-empty" id="tile-2"></div>
+            <div class="tile tile-empty" id="tile-3"></div>
+            <div class="tile tile-empty" id="tile-4"></div>
+        </div>
+        <!-- empty rows -->
+        {% with remaining=attempts_left|add:"-1" %}
+        {% for i in "12345" %}
+            {% if forloop.counter <= remaining %}
+            <div class="tile-row tile-row-empty">
+                <div class="tile tile-empty"></div>
+                <div class="tile tile-empty"></div>
+                <div class="tile tile-empty"></div>
+                <div class="tile tile-empty"></div>
+                <div class="tile tile-empty"></div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        {% endwith %}
+        {% endif %}
+    </div>
+
+    <!-- feedback messages -->
+    <div id="message-area" class="message-area"></div>
+
+    {% if game_over %}
+    <div class="game-over-box">
+        {% if game.won %}
+        <p class="game-over-win">You guessed it in {{ game.attempts }} attempt{{ game.attempts|pluralize }}!</p>
+        {% else %}
+        <p class="game-over-lose">The word was <strong>{{ game.target_word|upper }}</strong></p>
+        {% endif %}
+        <a href="{% url 'worndly:game_select' %}" class="btn btn-primary">Play Again</a>
+    </div>
+    {% else %}
+    <!-- on-screen keyboard -->
+    <div class="keyboard">
+        <div class="keyboard-row">
+            {% for key in "QWERTYUIOP" %}
+            <button class="key" data-key="{{ key }}">{{ key }}</button>
+            {% endfor %}
+        </div>
+        <div class="keyboard-row">
+            {% for key in "ASDFGHJKL" %}
+            <button class="key" data-key="{{ key }}">{{ key }}</button>
+            {% endfor %}
+        </div>
+        <div class="keyboard-row">
+            <button class="key key-action" data-key="ENTER">ENTER</button>
+            {% for key in "ZXCVBNM" %}
+            <button class="key" data-key="{{ key }}">{{ key }}</button>
+            {% endfor %}
+            <button class="key key-action" data-key="BACKSPACE">⌫</button>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    // print target word to console
+    console.log("Target word:", "{{ game.target_word|upper }}");
+
+    const GAME_ID = {{ game.pk }};
+    const CSRF_TOKEN = "{{ csrf_token }}";
+    const MAX_ATTEMPTS = {{ max_attempts }};
+    let currentAttempts = {{ game.attempts }};
+    let currentGuess = [];
+
+    function showMessage(msg, isError) {
+        const area = document.getElementById("message-area");
+        area.textContent = msg;
+        area.className = "message-area " + (isError ? "message-error" : "message-info");
+        setTimeout(() => { area.textContent = ""; area.className = "message-area"; }, 2500);
+    }
+
+    function updateActiveTiles() {
+        for (let i = 0; i < 5; i++) {
+            const tile = document.getElementById("tile-" + i);
+            if (tile) {
+                tile.textContent = currentGuess[i] || "";
+                tile.className = currentGuess[i] ? "tile tile-input" : "tile tile-empty";
+            }
+        }
+    }
+
+    async function submitGuess() {
+        if (currentGuess.length !== 5) {
+            showMessage("Please enter a 5-letter word.", true);
+            return;
+        }
+        const word = currentGuess.join("").toLowerCase();
+        try {
+            const resp = await fetch("/game/" + GAME_ID + "/guess/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": CSRF_TOKEN,
+                },
+                body: "guess=" + encodeURIComponent(word),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                showMessage(data.error || "Something went wrong.", true);
+                return;
+            }
+            revealRow(currentGuess, data.result);
+            currentAttempts++;
+            currentGuess = [];
+            document.getElementById("attempts-left").textContent = MAX_ATTEMPTS - currentAttempts;
+            if (data.game_over) {
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                rebuildActiveRow();
+            }
+        } catch (err) {
+            showMessage("Network error. Please try again.", true);
+        }
+    }
+
+    function revealRow(letters, result) {
+        const activeRow = document.getElementById("active-row");
+        if (!activeRow) return;
+        activeRow.removeAttribute("id");
+        const colorMap = { "G": "tile-G", "Y": "tile-Y", "X": "tile-X" };
+        for (let i = 0; i < 5; i++) {
+            const tile = activeRow.children[i];
+            tile.removeAttribute("id");
+            tile.textContent = letters[i];
+            tile.className = "tile " + (colorMap[result[i]] || "tile-X");
+        }
+        updateKeyboard(letters, result);
+    }
+
+    function rebuildActiveRow() {
+        const board = document.getElementById("game-board");
+        const emptyRows = board.querySelectorAll(".tile-row-empty");
+        if (emptyRows.length > 0) emptyRows[0].remove();
+        const newRow = document.createElement("div");
+        newRow.className = "tile-row";
+        newRow.id = "active-row";
+        for (let i = 0; i < 5; i++) {
+            const tile = document.createElement("div");
+            tile.className = "tile tile-empty";
+            tile.id = "tile-" + i;
+            newRow.appendChild(tile);
+        }
+        const firstEmpty = board.querySelector(".tile-row-empty");
+        if (firstEmpty) {
+            board.insertBefore(newRow, firstEmpty);
+        } else {
+            board.appendChild(newRow);
+        }
+    }
+
+    function updateKeyboard(letters, result) {
+        const priority = { "G": 3, "Y": 2, "X": 1 };
+        for (let i = 0; i < 5; i++) {
+            const btn = document.querySelector(".key[data-key='" + letters[i] + "']");
+            if (!btn) continue;
+            const current = btn.dataset.state;
+            const currentP = priority[current] || 0;
+            if (priority[result[i]] > currentP) {
+                btn.dataset.state = result[i];
+                btn.className = "key key-" + result[i];
+            }
+        }
+    }
+
+    function handleKey(key) {
+        if (key === "BACKSPACE") {
+            if (currentGuess.length > 0) { currentGuess.pop(); updateActiveTiles(); }
+        } else if (key === "ENTER") {
+            submitGuess();
+        } else if (/^[A-Z]$/.test(key) && currentGuess.length < 5) {
+            currentGuess.push(key);
+            updateActiveTiles();
+        }
+    }
+
+    // physical keyboard input
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleKey("ENTER");
+        else if (e.key === "Backspace") handleKey("BACKSPACE");
+        else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+    });
+
+    // on-screen keyboard clicks
+    document.querySelectorAll(".key").forEach(btn => {
+        btn.addEventListener("click", () => handleKey(btn.dataset.key));
+    });
+</script>
+{% endblock %}
