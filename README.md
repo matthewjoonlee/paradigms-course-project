@@ -12,6 +12,7 @@ This repository contains the Phase 1 Django starter for Worndly. It includes a w
 ## Features implemented in Phase 1
 - Feature 1.1: create player profile (username, email, password, optional name)
 - Feature 2.1: gameplay (language selection, word guessing, color feedback, daily limit)
+- Feature 3.1: Dashboard table of prior plays with time-range filtering (week/month/year/all)
 
 ## Setup
 

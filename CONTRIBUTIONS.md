@@ -14,7 +14,9 @@
 - Created Game and Guess database to store game history.
 - Added language word files and wrote CSS for style of game board.
 
-## Team member 3
+## Martin Castellanos
 
-- Replace this placeholder with the third member's actual feature work
+- Implemented subfeature 3.1: dashboard table of prior plays.
+- Built dashboard view, URL, template, and nav link.
+- Added filter tabs (week/month/year/all), results table, and dashboard CSS.
 
