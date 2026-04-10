@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Worndly{% endblock %}
+
+{% block content %}
+<section class="section-header">
+    <div>
+        <p class="eyebrow">Play History</p>
+        <h1>Your Games</h1>
+    </div>
+    <a class="button" href="{% url 'worndly:game_select' %}">New game</a>
+</section>
+
+<section class="panel" style="margin-top: 1.5rem;">
+    <div class="dashboard-filters">
+        <a href="?filter=week"  class="button {% if active_filter == 'week'  %}button-active{% else %}button-secondary{% endif %}">This week</a>
+        <a href="?filter=month" class="button {% if active_filter == 'month' %}button-active{% else %}button-secondary{% endif %}">This month</a>
+        <a href="?filter=year"  class="button {% if active_filter == 'year'  %}button-active{% else %}button-secondary{% endif %}">This year</a>
+        <a href="?filter=all"   class="button {% if active_filter == 'all'   %}button-active{% else %}button-secondary{% endif %}">All time</a>
+    </div>
+
+    {% if games %}
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Language</th>
+                    <th>Result</th>
+                    <th>Attempts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in games %}
+                <tr>
+                    <td>{{ game.created_at|date:"M j, Y" }}</td>
+                    <td>{{ game.language|upper }}</td>
+                    <td>
+                        {% if game.won is None %}
+                            <span class="result-badge result-in-progress">In progress</span>
+                        {% elif game.won %}
+                            <span class="result-badge result-pass">Pass</span>
+                        {% else %}
+                            <span class="result-badge result-fail">Fail</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ game.attempts }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="dashboard-empty">No games found for this period.</p>
+    {% endif %}
+</section>
+{% endblock %}

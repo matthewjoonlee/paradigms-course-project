@@ -1,5 +1,6 @@
 import os
 import random
+from datetime import timedelta
 
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -240,4 +241,29 @@ def game_guess(request, pk):
         "won": game.won,
         # only reveal the target word when the game is over
         "target_word": game.target_word.upper() if game.won is not None else None,
+    })
+
+
+# feature 3.1
+
+@login_required
+def dashboard(request):
+    # shows a filterable history of all games played by the current user.
+    active_filter = request.GET.get("filter", "all")
+    now = timezone.now()
+
+    games = Game.objects.filter(player=request.user)
+
+    if active_filter == "week":
+        games = games.filter(created_at__gte=now - timedelta(weeks=1))
+    elif active_filter == "month":
+        games = games.filter(created_at__gte=now - timedelta(days=30))
+    elif active_filter == "year":
+        games = games.filter(created_at__gte=now - timedelta(days=365))
+
+    games = games.order_by("-created_at")
+
+    return render(request, "worndly/dashboard.html", {
+        "games": games,
+        "active_filter": active_filter,
     })

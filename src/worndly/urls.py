@@ -7,7 +7,8 @@ from .views import (
     PlayerProfileListView,
     game_select,
     game_play,
-    game_guess
+    game_guess,
+    dashboard,
 )
 
 app_name = "worndly"
@@ -23,4 +24,7 @@ urlpatterns = [
     path("game/", game_select, name="game_select"),
     path("game/<int:pk>/", game_play, name="game_play"),
     path("game/<int:pk>/guess/", game_guess, name="game_guess"),
+
+    # feature 3.1
+    path("dashboard/", dashboard, name="dashboard"),
 ]
