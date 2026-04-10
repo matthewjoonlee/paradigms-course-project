@@ -79,6 +79,7 @@ class PlayerProfileCreateView(FormView):
     form_class = PlayerProfileCreationForm
 
     def form_valid(self, form):
+        # subfeature 1.1 creates both the auth account and its linked player profile
         try:
             user = User.objects.create_user(
                 username=form.cleaned_data["username"],

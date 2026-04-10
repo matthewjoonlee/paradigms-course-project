@@ -1,6 +1,6 @@
-Project worndly_phase1 {
+Project worndly {
   database_type: "SQLite"
-  Note: "Phase 1 storage design for worNDly subfeature 1.1: Create new User Profile."
+  Note: "Current worNDly storage design based on the Django models in src/worndly/models.py."
 }
 
 Table auth_user {
@@ -20,3 +20,22 @@ Table player_profile {
   Note: "Application-specific profile data for a player."
 }
 
+Table game {
+  id integer [pk, increment]
+  player_id integer [not null, ref: > auth_user.id]
+  language varchar(2) [not null, note: "en, es, fr, de, pt"]
+  target_word varchar(5) [not null]
+  won boolean [note: "Null until the game is finished"]
+  attempts integer [not null, default: 0]
+  created_at datetime [not null]
+  Note: "A gameplay session associated with one authenticated user."
+}
+
+Table guess {
+  id integer [pk, increment]
+  game_id integer [not null, ref: > game.id]
+  word varchar(5) [not null]
+  result varchar(5) [not null, note: "Per-letter feedback such as GXYXG"]
+  created_at datetime [not null]
+  Note: "A single guessed word within a game."
+}

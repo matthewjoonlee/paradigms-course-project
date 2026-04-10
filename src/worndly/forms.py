@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 
 class PlayerProfileCreationForm(forms.Form):
+    # Name is optional, but the auth fields are required.
     name = forms.CharField(max_length=120, required=False)
     username = forms.CharField(max_length=150)
     email = forms.EmailField()

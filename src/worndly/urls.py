@@ -13,6 +13,7 @@ from .views import (
 app_name = "worndly"
 
 urlpatterns = [
+    #feature 1.1
     path("", HomeView.as_view(), name="home"),
     path("profiles/", PlayerProfileListView.as_view(), name="profile_list"),
     path("profiles/new/", PlayerProfileCreateView.as_view(), name="profile_create"),
