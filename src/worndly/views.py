@@ -330,11 +330,12 @@ def game_guess(request, pk):
     })
 
 
-# feature 3.1
+# feature 3.1 & 3.2
 
 @login_required(login_url="worndly:login")
 def dashboard(request):
-    # shows a filterable history of all games played by the current user.
+    # shows a filterable history of all games played by the current user,
+    # plus overall statistics across all plays.
     active_filter = request.GET.get("filter", "all")
     now = timezone.now()
     profile = get_player_profile(request.user)
@@ -350,10 +351,22 @@ def dashboard(request):
 
     games = games.order_by("-created_at")
 
+    # feature 3.2: compute statistics over all completed games (not filtered)
+    all_completed = Game.objects.filter(player=request.user, won__isnull=False)
+    total_completed = all_completed.count()
+    games_won = all_completed.filter(won=True).count()
+    win_rate = round(games_won / total_completed * 100) if total_completed else 0
+
+    attempts_dist = [all_completed.filter(attempts=n).count() for n in range(1, 7)]
+
     return render(request, "worndly/dashboard.html", {
         "games": games,
         "active_filter": active_filter,
         "extra_plays_remaining": profile.extra_plays_remaining,
+        "total_completed": total_completed,
+        "games_won": games_won,
+        "win_rate": win_rate,
+        "attempts_dist": attempts_dist,
     })
 
 
