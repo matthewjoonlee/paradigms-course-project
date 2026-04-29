@@ -19,4 +19,7 @@
 - Implemented subfeature 3.1: dashboard table of prior plays.
 - Built dashboard view, URL, template, and nav link.
 - Added filter tabs (week/month/year/all), results table, and dashboard CSS.
+- Implemented subfeature 3.2: statistics summary on the dashboard.
+- Added games played count, win rate, and attempts distribution bar chart using Chart.js.
+- Extended dashboard view to compute stats across all completed games.
 

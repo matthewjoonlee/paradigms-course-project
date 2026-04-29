@@ -11,6 +11,51 @@
     <a class="button" href="{% url 'worndly:game_select' %}">New game</a>
 </section>
 
+<!-- feature 3.2: statistics summary -->
+<div class="panel-grid" style="margin-top: 1.5rem;">
+    <div class="panel">
+        <p class="eyebrow">All time</p>
+        <p class="metric">{{ total_completed }}</p>
+        <p class="stat-label">Games played</p>
+    </div>
+    <div class="panel">
+        <p class="eyebrow">Win rate</p>
+        <p class="metric">{{ win_rate }}%</p>
+        <p class="stat-label">{{ games_won }} of {{ total_completed }} completed</p>
+    </div>
+    <div class="panel">
+        <p class="eyebrow">Attempts distribution</p>
+        <div class="chart-wrapper">
+            <canvas id="attemptsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+    const ctx = document.getElementById('attemptsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['1', '2', '3', '4', '5', '6'],
+            datasets: [{
+                label: 'Games',
+                data: {{ attempts_dist }},
+                backgroundColor: '#1f6fb2',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { title: { display: true, text: 'Attempts' } },
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+</script>
+
 <section class="panel" style="margin-top: 1.5rem;">
     <div class="dashboard-filters">
         <a href="?filter=week"  class="button {% if active_filter == 'week'  %}button-active{% else %}button-secondary{% endif %}">This week</a>

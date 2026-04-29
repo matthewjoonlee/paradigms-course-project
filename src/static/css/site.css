@@ -323,3 +323,15 @@ dt {
     color: var(--muted);
     margin: 1rem 0 0;
 }
+
+/* 3.2: stats panel additions */
+.stat-label {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 120px;
+}
