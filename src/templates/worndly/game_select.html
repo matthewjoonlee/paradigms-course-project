@@ -9,6 +9,9 @@
 
     {% if error %}
     <div class="alert alert-error">{{ error }}</div>
+    {% if show_purchase_link %}
+    <p><a class="button button-secondary" href="{% url 'worndly:buy_plays' %}">Buy more plays</a></p>
+    {% endif %}
     {% endif %}
 
     <form method="post" class="language-form">

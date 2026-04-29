@@ -14,3 +14,13 @@ class PlayerProfileCreationForm(forms.Form):
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError("That username is already taken.")
         return username
+
+
+class LoginForm(forms.Form):
+    # feature 1 2 uses username and password
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+
+
+class PurchasePlaysForm(forms.Form):
+    amount = forms.IntegerField(min_value=1, label="games to buy")

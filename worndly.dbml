@@ -15,6 +15,7 @@ Table player_profile {
   id integer [pk, increment]
   user_id integer [not null, unique, ref: > auth_user.id]
   name varchar(120) [note: "Optional display name"]
+  extra_plays_remaining integer [not null, default: 0]
   created_at datetime [not null]
   updated_at datetime [not null]
   Note: "Application-specific profile data for a player."
