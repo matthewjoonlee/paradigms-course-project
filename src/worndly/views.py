@@ -362,8 +362,67 @@ def dashboard(request):
     return render(request, "worndly/dashboard.html", {
         "games": games,
         "active_filter": active_filter,
+        "extra_plays_remaining": profile.extra_plays_remaining,
         "total_completed": total_completed,
         "games_won": games_won,
         "win_rate": win_rate,
         "attempts_dist": attempts_dist,
+    })
+
+
+@login_required(login_url="worndly:login")
+def buy_plays(request):
+    # feature 4 1 lets a user buy extra game plays
+    profile = get_player_profile(request.user)
+    form = PurchasePlaysForm(request.POST or None)
+    balance = None
+    error = None
+    success = None
+
+    if not settings.KRATOS_ACCESS_TOKEN:
+        error = "kratos access token is missing"
+        return render(request, "worndly/buy_plays.html", {
+            "form": form,
+            "balance": balance,
+            "error": error,
+            "success": success,
+            "extra_plays_remaining": profile.extra_plays_remaining,
+        })
+
+    try:
+        balance_response = view_balance_for_user(request.user.email)
+        balance_data = balance_response.json()
+        if balance_response.status_code == 200:
+            balance = balance_data.get("amount")
+        else:
+            error = balance_data.get("detail") or balance_data.get("message") or "could not load current balance"
+    except requests.RequestException:
+        error = "could not reach the coin api"
+    except ValueError:
+        error = "received an invalid balance response"
+
+    if request.method == "POST" and form.is_valid() and error is None:
+        amount = form.cleaned_data["amount"]
+        try:
+            pay_response = user_pay(request.user.email, amount)
+            pay_data = pay_response.json()
+            if pay_response.status_code == 200:
+                profile.extra_plays_remaining += amount
+                profile.save(update_fields=["extra_plays_remaining"])
+                success = f"purchase successful and {amount} extra plays were added"
+                balance = pay_data.get("new_amount", balance)
+                form = PurchasePlaysForm()
+            else:
+                error = pay_data.get("detail") or pay_data.get("message") or "purchase failed"
+        except requests.RequestException:
+            error = "could not reach the coin api"
+        except ValueError:
+            error = "received an invalid purchase response"
+
+    return render(request, "worndly/buy_plays.html", {
+        "form": form,
+        "balance": balance,
+        "error": error,
+        "success": success,
+        "extra_plays_remaining": profile.extra_plays_remaining,
     })
