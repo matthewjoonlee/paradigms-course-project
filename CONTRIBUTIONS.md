@@ -27,3 +27,4 @@
 - Implemented subfeature 3.2: statistics summary on the dashboard.
 - Added games played count, win rate, and attempts distribution bar chart using Chart.js.
 - Extended dashboard view to compute stats across all completed games.
+
