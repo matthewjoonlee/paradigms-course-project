@@ -55,6 +55,21 @@ python manage.py runserver
 
 Open `http://127.0.0.1:8000/` for the app and `http://127.0.0.1:8000/admin/` for Django admin.
 
+## Local .env setup for feature 4.1
+
+Create a local `.env` file in the repository root with:
+
+```env
+KRATOS_ACCESS_TOKEN=your_access_token_here
+KRATOS_GROUP_PATH=group20/group20
+```
+
+This file is git-ignored and must be created locally by anyone running the purchase feature.
+
+For Feature 4.1 testing, use a Worndly account whose email is `mlee55@nd.edu`, since that email is the one currently funded in the external Krato$Coin API for this repository setup.
+
+The purchase feature uses the external API email, not the username, so the email on the Django account must match the email registered in the external REST API admin.
+
 ## How to play
 1. Create a user profile at `http://127.0.0.1:8000/profiles/new/`
 2. Go to `http://127.0.0.1:8000/game/` to start game
@@ -64,8 +79,9 @@ Open `http://127.0.0.1:8000/` for the app and `http://127.0.0.1:8000/admin/` for
 
 - Landing page with navigation and project summary
 - Subfeature 1.1 implemented as player profile creation
+- Feature 4.1 purchase flow for buying extra game plays with Krato$Coin
 - Django `User` stores username, email, and password
-- `PlayerProfile` stores the optional player name
+- `PlayerProfile` stores the optional player name and purchased extra plays
 - Profile create, list, and detail views
 - Django admin integration for stored player profiles
 

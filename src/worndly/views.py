@@ -1,8 +1,11 @@
 import os
 import random
 from datetime import timedelta
+from urllib.parse import quote
 
-from django.contrib.auth import login
+import requests
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.views.generic import DetailView, ListView, TemplateView
@@ -12,8 +15,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-
-from .forms import PlayerProfileCreationForm
+from .forms import LoginForm, PlayerProfileCreationForm, PurchasePlaysForm
 from .models import PlayerProfile, Game, Guess
 
 # path to the folder containing the word list .txt files
@@ -64,6 +66,46 @@ def games_played_today(user):
     # returns number of games user has played today
     today = timezone.now().date()
     return Game.objects.filter(player=user, created_at__date=today).count()
+
+
+def get_player_profile(user):
+    # keep gameplay and purchases tied to one profile record
+    profile, _ = PlayerProfile.objects.get_or_create(user=user, defaults={"name": ""})
+    return profile
+
+
+def kratos_headers():
+    return {
+        "Authorization": f"Bearer {settings.KRATOS_ACCESS_TOKEN}"
+    }
+
+
+def kratos_balance_url(email):
+    encoded_email = quote(email, safe="")
+    return f"{settings.KRATOS_API_BASE_URL}/{settings.KRATOS_GROUP_PATH}/player/{encoded_email}/"
+
+
+def kratos_pay_url(email):
+    encoded_email = quote(email, safe="")
+    return f"{settings.KRATOS_API_BASE_URL}/{settings.KRATOS_GROUP_PATH}/player/{encoded_email}/pay"
+
+
+def view_balance_for_user(email):
+    # read the current coin balance from the external api
+    api_response = requests.get(kratos_balance_url(email), headers=kratos_headers(), timeout=10)
+    return api_response
+
+
+def user_pay(email, amount):
+    # charge the external api for the requested number of plays
+    data = {"amount": amount}
+    api_response = requests.post(
+        kratos_pay_url(email),
+        headers=kratos_headers(),
+        data=data,
+        timeout=10,
+    )
+    return api_response
 
 class HomeView(TemplateView):
     template_name = "worndly/home.html"
@@ -116,9 +158,38 @@ class PlayerProfileDetailView(DetailView):
     context_object_name = "profile"
 
 
+class LoginView(FormView):
+    template_name = "worndly/login.html"
+    form_class = LoginForm
+
+    def dispatch(self, request, *args, **kwargs):
+        # keep logged in users out of the login form
+        if request.user.is_authenticated:
+            return redirect("worndly:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        user = authenticate(
+            self.request,
+            username=form.cleaned_data["username"],
+            password=form.cleaned_data["password"],
+        )
+        if user is None:
+            form.add_error(None, "Invalid username or password.")
+            return self.form_invalid(form)
+        login(self.request, user)
+        return redirect("worndly:dashboard")
+
+
+def logout_view(request):
+    # feature 1 3 ends the current session
+    logout(request)
+    return redirect("worndly:home")
+
+
 # 2.1: GAMEPLAY VIEWS
 
-@login_required
+@login_required(login_url="worndly:login")
 def game_select(request):
     # GET:  Show the language selection page.
     # POST: Validate  selected language, check daily game quota, create new Game, redirect to game board.
@@ -131,6 +202,7 @@ def game_select(request):
         ("pt", "Portuguese"),
     ]
     error = None
+    show_purchase_link = False
 
     if request.method == "POST":
         language = request.POST.get("language")
@@ -142,8 +214,21 @@ def game_select(request):
         else:
             # check if user has hit their daily free game limit
             played_today = games_played_today(request.user)
+            profile = get_player_profile(request.user)
             if played_today >= FREE_GAMES_PER_DAY:
-                error = f"You've used all {FREE_GAMES_PER_DAY} free games for today. Please purchase more plays to continue."
+                if profile.extra_plays_remaining > 0:
+                    word = pick_random_word(language)
+                    game = Game.objects.create(
+                        player=request.user,
+                        language=language,
+                        target_word=word,
+                    )
+                    profile.extra_plays_remaining -= 1
+                    profile.save(update_fields=["extra_plays_remaining"])
+                    return redirect("worndly:game_play", pk=game.pk)
+                else:
+                    error = f"You've used all {FREE_GAMES_PER_DAY} free games for today. Please purchase more plays to continue."
+                    show_purchase_link = True
             else:
                 # pick a random word and create a new game in the database
                 word = pick_random_word(language)
@@ -157,10 +242,11 @@ def game_select(request):
     return render(request, "worndly/game_select.html", {
         "languages": LANGUAGE_CHOICES,
         "error": error,
+        "show_purchase_link": show_purchase_link,
     })
 
 
-@login_required
+@login_required(login_url="worndly:login")
 def game_play(request, pk):
 
     # renders game board for a specific game.
@@ -196,7 +282,7 @@ def game_play(request, pk):
     })
 
 
-@login_required
+@login_required(login_url="worndly:login")
 def game_guess(request, pk):
     # AJAX endpoint that receives guessed word via POST, validates it, evaluates it, saves to database, and returns result as JSON.
 
@@ -246,11 +332,12 @@ def game_guess(request, pk):
 
 # feature 3.1
 
-@login_required
+@login_required(login_url="worndly:login")
 def dashboard(request):
     # shows a filterable history of all games played by the current user.
     active_filter = request.GET.get("filter", "all")
     now = timezone.now()
+    profile = get_player_profile(request.user)
 
     games = Game.objects.filter(player=request.user)
 
@@ -266,4 +353,63 @@ def dashboard(request):
     return render(request, "worndly/dashboard.html", {
         "games": games,
         "active_filter": active_filter,
+        "extra_plays_remaining": profile.extra_plays_remaining,
+    })
+
+
+@login_required(login_url="worndly:login")
+def buy_plays(request):
+    # feature 4 1 lets a user buy extra game plays
+    profile = get_player_profile(request.user)
+    form = PurchasePlaysForm(request.POST or None)
+    balance = None
+    error = None
+    success = None
+
+    if not settings.KRATOS_ACCESS_TOKEN:
+        error = "kratos access token is missing"
+        return render(request, "worndly/buy_plays.html", {
+            "form": form,
+            "balance": balance,
+            "error": error,
+            "success": success,
+            "extra_plays_remaining": profile.extra_plays_remaining,
+        })
+
+    try:
+        balance_response = view_balance_for_user(request.user.email)
+        balance_data = balance_response.json()
+        if balance_response.status_code == 200:
+            balance = balance_data.get("amount")
+        else:
+            error = balance_data.get("detail") or balance_data.get("message") or "could not load current balance"
+    except requests.RequestException:
+        error = "could not reach the coin api"
+    except ValueError:
+        error = "received an invalid balance response"
+
+    if request.method == "POST" and form.is_valid() and error is None:
+        amount = form.cleaned_data["amount"]
+        try:
+            pay_response = user_pay(request.user.email, amount)
+            pay_data = pay_response.json()
+            if pay_response.status_code == 200:
+                profile.extra_plays_remaining += amount
+                profile.save(update_fields=["extra_plays_remaining"])
+                success = f"purchase successful and {amount} extra plays were added"
+                balance = pay_data.get("new_amount", balance)
+                form = PurchasePlaysForm()
+            else:
+                error = pay_data.get("detail") or pay_data.get("message") or "purchase failed"
+        except requests.RequestException:
+            error = "could not reach the coin api"
+        except ValueError:
+            error = "received an invalid purchase response"
+
+    return render(request, "worndly/buy_plays.html", {
+        "form": form,
+        "balance": balance,
+        "error": error,
+        "success": success,
+        "extra_plays_remaining": profile.extra_plays_remaining,
     })

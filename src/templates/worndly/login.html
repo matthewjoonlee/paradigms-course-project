@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Worndly{% endblock %}
+
+{% block content %}
+<section class="section-header">
+    <div>
+        <p class="eyebrow">Feature 1.2</p>
+        <h1>Log in</h1>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="button" type="submit">Log in</button>
+    </form>
+</section>
+{% endblock %}

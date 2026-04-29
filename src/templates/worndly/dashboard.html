@@ -7,8 +7,12 @@
     <div>
         <p class="eyebrow">Play History</p>
         <h1>Your Games</h1>
+        <p>extra plays remaining: {{ extra_plays_remaining }}</p>
     </div>
-    <a class="button" href="{% url 'worndly:game_select' %}">New game</a>
+    <div class="hero-actions">
+        <a class="button" href="{% url 'worndly:game_select' %}">New game</a>
+        <a class="button button-secondary" href="{% url 'worndly:buy_plays' %}">Buy plays</a>
+    </div>
 </section>
 
 <section class="panel" style="margin-top: 1.5rem;">

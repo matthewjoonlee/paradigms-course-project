@@ -7,6 +7,7 @@ class PlayerProfile(models.Model):
     # Keep player-specific fields separate from Django's built-in auth model.
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="player_profile")
     name = models.CharField(max_length=120, blank=True)
+    extra_plays_remaining = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

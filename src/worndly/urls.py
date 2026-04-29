@@ -2,9 +2,12 @@ from django.urls import path
 
 from .views import (
     HomeView,
+    LoginView,
     PlayerProfileCreateView,
     PlayerProfileDetailView,
     PlayerProfileListView,
+    buy_plays,
+    logout_view,
     game_select,
     game_play,
     game_guess,
@@ -19,6 +22,9 @@ urlpatterns = [
     path("profiles/", PlayerProfileListView.as_view(), name="profile_list"),
     path("profiles/new/", PlayerProfileCreateView.as_view(), name="profile_create"),
     path("profiles/<int:pk>/", PlayerProfileDetailView.as_view(), name="profile_detail"),
+    path("login/", LoginView.as_view(), name="login"),
+    path("logout/", logout_view, name="logout"),
+    path("buy-plays/", buy_plays, name="buy_plays"),
 
     # feature 2.1
     path("game/", game_select, name="game_select"),

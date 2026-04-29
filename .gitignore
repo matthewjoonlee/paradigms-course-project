@@ -4,3 +4,4 @@ __pycache__/
 *.sqlite3
 src/db.sqlite3
 .DS_Store
+.env

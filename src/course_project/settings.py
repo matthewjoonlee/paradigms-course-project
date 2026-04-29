@@ -10,11 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
+
+
+def load_env_file(path):
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip())
+
+
+load_env_file(REPO_ROOT / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -107,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'America/Indiana/Indianapolis'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -119,6 +134,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+KRATOS_ACCESS_TOKEN = os.environ.get("KRATOS_ACCESS_TOKEN", "")
+KRATOS_GROUP_PATH = os.environ.get("KRATOS_GROUP_PATH", "group20/group20")
+KRATOS_API_BASE_URL = os.environ.get(
+    "KRATOS_API_BASE_URL",
+    "https://jcssantos.pythonanywhere.com/api",
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
