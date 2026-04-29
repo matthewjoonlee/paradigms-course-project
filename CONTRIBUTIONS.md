@@ -1,4 +1,4 @@
-# Phase 1 Contributions
+# Project Contributions
 
 
 ## Matthew Lee
@@ -6,6 +6,11 @@
 - Bootstrap Django project structure in `src/`
 - Configure settings, templates, static files, and SQLite database
 - Implement subfeature 1.1 for player profile creation
+- Implement subfeature 1.2 for user login with username and password
+- Implement subfeature 1.3 for user logout
+- Implement feature 4.1 for buying extra game plays with the external Krato$Coin REST API
+- Add local `.env`-based configuration for the REST API token and group path
+- Update README setup instructions and sync the database diagram for the new purchase flow
 
 ## Sofia Cardona
 
@@ -19,4 +24,3 @@
 - Implemented subfeature 3.1: dashboard table of prior plays.
 - Built dashboard view, URL, template, and nav link.
 - Added filter tabs (week/month/year/all), results table, and dashboard CSS.
-

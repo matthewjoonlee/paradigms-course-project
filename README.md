@@ -1,6 +1,6 @@
-# Phase 1 Django Course Project
+# Worndly Django Course Project
 
-This repository contains the Phase 1 Django starter for Worndly. It includes a working app for subfeature 1.1, SQLite storage, Django admin, and the supporting documentation required for submission.
+This repository contains the Django implementation of Worndly, including user profile creation, login/logout, gameplay, dashboard history, and the Feature 4.1 purchase flow for buying extra game plays with Krato$Coin.
 
 ## Tech stack
 
@@ -11,8 +11,11 @@ This repository contains the Phase 1 Django starter for Worndly. It includes a w
 
 ## Features implemented in Phase 1
 - Feature 1.1: create player profile (username, email, password, optional name)
+- Feature 1.2: log in with username and password
+- Feature 1.3: log out
 - Feature 2.1: gameplay (language selection, word guessing, color feedback, daily limit)
 - Feature 3.1: Dashboard table of prior plays with time-range filtering (week/month/year/all)
+- Feature 4.1: buy extra game plays using Krato$Coin through the external REST API
 
 ## Setup
 
@@ -75,10 +78,12 @@ The purchase feature uses the external API email, not the username, so the email
 2. Go to `http://127.0.0.1:8000/game/` to start game
 3. Select language and enter 5-letter words in 6 attempts
 
-## Current Phase 1 baseline
+## Current app baseline
 
 - Landing page with navigation and project summary
-- Subfeature 1.1 implemented as player profile creation
+- Feature 1.1 implemented as player profile creation
+- Feature 1.2 implemented as username/password login
+- Feature 1.3 implemented as logout
 - Feature 4.1 purchase flow for buying extra game plays with Krato$Coin
 - Django `User` stores username, email, and password
 - `PlayerProfile` stores the optional player name and purchased extra plays
