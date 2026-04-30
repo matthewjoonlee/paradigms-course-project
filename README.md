@@ -89,14 +89,8 @@ The purchase feature uses the external API email, not the username, so the email
 - `PlayerProfile` stores the optional player name and purchased extra plays
 - Profile create, list, and detail views
 - Django admin integration for stored player profiles
+- Feature 3.1, 3.2
 
-## Suggested team next steps
-
-1. Add the remaining selected Phase 1 features in separate views, models, or apps as needed.
-2. Decide whether later phases need login, profile editing, or stricter validation rules.
-3. Capture screenshots from the running app for the report PDF.
-4. Fill in `CONTRIBUTIONS.md` with each teammate's concrete work before submission.
-5. Use the report outline in `src/reports/phase1_report_outline.md` to produce the required PDF.
 
 ## Running tests
 
